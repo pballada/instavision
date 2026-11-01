@@ -43,6 +43,8 @@ struct FeedView: View {
         if session.isGalleryOpen {
             await dismissImmersiveSpace()
         } else {
+            // Only one immersive space can be open, so Reels Theater closes first.
+            if session.isTheaterOpen { await dismissImmersiveSpace() }
             _ = await openImmersiveSpace(id: SceneID.gallery)
         }
     }

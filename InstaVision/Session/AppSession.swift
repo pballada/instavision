@@ -23,6 +23,9 @@ final class AppSession {
     /// Whether the immersive gallery wall is showing. Updated by the space itself, so it stays
     /// correct when the system closes it.
     var isGalleryOpen = false
+    /// Whether Reels Theater is showing, and the Reel it should play.
+    var isTheaterOpen = false
+    var theaterReelID: InstagramMedia.ID?
 
     private let credentials: any CredentialStore
     private let defaults: UserDefaults

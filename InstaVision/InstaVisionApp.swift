@@ -33,6 +33,12 @@ struct InstaVisionApp: App {
                 .environment(session)
         }
         .immersionStyle(selection: .constant(.mixed), in: .mixed)
+
+        ImmersiveSpace(id: SceneID.theater) {
+            ReelsTheaterView()
+                .environment(session)
+        }
+        .immersionStyle(selection: .constant(.mixed), in: .mixed)
     }
 }
 
@@ -40,4 +46,5 @@ enum SceneID {
     static let media = "media"
     static let gallery = "gallery"
     static let reels = "reels"
+    static let theater = "theater"
 }
