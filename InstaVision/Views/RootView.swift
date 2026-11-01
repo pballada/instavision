@@ -18,7 +18,7 @@ struct RootView: View {
                     TabView(selection: $tab) {
                         Tab("Reels", systemImage: "play.rectangle.on.rectangle", value: AppTab.reels) {
                             ReelsView(store: reels) { reel in
-                                openWindow(id: SceneID.media, value: reel)
+                                openWindow(id: SceneID.reels, value: reel.id)
                             }
                         }
                         Tab("Posts", systemImage: "square.grid.3x3", value: AppTab.posts) {
