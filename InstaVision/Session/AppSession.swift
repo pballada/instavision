@@ -54,6 +54,10 @@ final class AppSession {
         }
     }
 
+    func tokenExpiry() async -> Date? {
+        await credentials.load()?.expiresAt
+    }
+
     func startDemo() {
         defaults.set(true, forKey: Self.demoKey)
         feed = FeedStore(service: DemoInstagramService())

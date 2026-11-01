@@ -5,6 +5,8 @@ struct FeedView: View {
     let feed: FeedStore
     var onSelect: (InstagramMedia) -> Void = { _ in }
 
+    @State private var showsSettings = false
+
     private let columns = [GridItem(.adaptive(minimum: 220, maximum: 320), spacing: 12)]
 
     var body: some View {
@@ -12,6 +14,9 @@ struct FeedView: View {
             content
                 .navigationTitle(feed.profile.map { "@\($0.username)" } ?? "InstaVision")
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Settings", systemImage: "gearshape") { showsSettings = true }
+                    }
                     ToolbarItem(placement: .primaryAction) {
                         Button("Refresh", systemImage: "arrow.clockwise") {
                             Task { await feed.refresh() }
@@ -19,6 +24,7 @@ struct FeedView: View {
                     }
                 }
         }
+        .sheet(isPresented: $showsSettings) { SettingsView() }
         .task { await feed.loadIfNeeded() }
     }
 
