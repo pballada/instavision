@@ -71,5 +71,12 @@ final class AppSession {
         let credentials = self.credentials
         feed = FeedStore(service: InstagramClient { await credentials.load()?.accessToken })
         state = .signedIn
+        Task { await refreshTokenIfNeeded() }
+    }
+
+    /// Extends long-lived tokens. Failures are expected for tokens younger than 24 hours, and an
+    /// actually expired token surfaces through the feed, so errors are ignored here.
+    private func refreshTokenIfNeeded() async {
+        _ = try? await TokenRefresher(store: credentials).refreshIfNeeded()
     }
 }
