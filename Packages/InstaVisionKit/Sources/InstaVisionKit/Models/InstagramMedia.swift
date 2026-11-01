@@ -8,8 +8,25 @@ public struct InstagramMedia: Codable, Hashable, Identifiable, Sendable {
         case carouselAlbum = "CAROUSEL_ALBUM"
     }
 
+    /// Where the media was published. Reels are `VIDEO` media with the `REELS` product type.
+    public enum ProductType: String, Codable, Sendable {
+        case ad = "AD"
+        case feed = "FEED"
+        case story = "STORY"
+        case reels = "REELS"
+        case unknown
+
+        public init(from decoder: Decoder) throws {
+            let raw = try decoder.singleValueContainer().decode(String.self)
+            self = ProductType(rawValue: raw) ?? .unknown
+        }
+    }
+
     public let id: String
     public let mediaType: MediaType
+    public let productType: ProductType?
+    /// For Reels: whether it also appears on the profile grid.
+    public let isSharedToFeed: Bool?
     public let mediaURL: URL?
     public let thumbnailURL: URL?
     public let permalink: URL?
@@ -22,6 +39,8 @@ public struct InstagramMedia: Codable, Hashable, Identifiable, Sendable {
     public init(
         id: String,
         mediaType: MediaType,
+        productType: ProductType? = nil,
+        isSharedToFeed: Bool? = nil,
         mediaURL: URL? = nil,
         thumbnailURL: URL? = nil,
         permalink: URL? = nil,
@@ -33,6 +52,8 @@ public struct InstagramMedia: Codable, Hashable, Identifiable, Sendable {
     ) {
         self.id = id
         self.mediaType = mediaType
+        self.productType = productType
+        self.isSharedToFeed = isSharedToFeed
         self.mediaURL = mediaURL
         self.thumbnailURL = thumbnailURL
         self.permalink = permalink
@@ -52,6 +73,9 @@ public struct InstagramMedia: Codable, Hashable, Identifiable, Sendable {
         }
     }
 
+    /// Whether this is a Reel.
+    public var isReel: Bool { productType == .reels }
+
     /// Items to page through in the detail view. Non-carousel posts are a single item.
     public var items: [InstagramMedia] {
         mediaType == .carouselAlbum && !children.isEmpty ? children : [self]
@@ -60,6 +84,8 @@ public struct InstagramMedia: Codable, Hashable, Identifiable, Sendable {
     enum CodingKeys: String, CodingKey {
         case id, permalink, caption, timestamp, children
         case mediaType = "media_type"
+        case productType = "media_product_type"
+        case isSharedToFeed = "is_shared_to_feed"
         case mediaURL = "media_url"
         case thumbnailURL = "thumbnail_url"
         case likeCount = "like_count"
@@ -72,6 +98,8 @@ public struct InstagramMedia: Codable, Hashable, Identifiable, Sendable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(String.self, forKey: .id)
         mediaType = try c.decode(MediaType.self, forKey: .mediaType)
+        productType = try c.decodeIfPresent(ProductType.self, forKey: .productType)
+        isSharedToFeed = try c.decodeIfPresent(Bool.self, forKey: .isSharedToFeed)
         mediaURL = try c.decodeIfPresent(URL.self, forKey: .mediaURL)
         thumbnailURL = try c.decodeIfPresent(URL.self, forKey: .thumbnailURL)
         permalink = try c.decodeIfPresent(URL.self, forKey: .permalink)
@@ -86,6 +114,8 @@ public struct InstagramMedia: Codable, Hashable, Identifiable, Sendable {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(id, forKey: .id)
         try c.encode(mediaType, forKey: .mediaType)
+        try c.encodeIfPresent(productType, forKey: .productType)
+        try c.encodeIfPresent(isSharedToFeed, forKey: .isSharedToFeed)
         try c.encodeIfPresent(mediaURL, forKey: .mediaURL)
         try c.encodeIfPresent(thumbnailURL, forKey: .thumbnailURL)
         try c.encodeIfPresent(permalink, forKey: .permalink)
@@ -97,5 +127,5 @@ public struct InstagramMedia: Codable, Hashable, Identifiable, Sendable {
     }
 
     /// Fields requested from the Graph API.
-    public static let fields = "id,media_type,media_url,thumbnail_url,permalink,caption,timestamp,like_count,comments_count,children{id,media_type,media_url,thumbnail_url}"
+    public static let fields = "id,media_type,media_product_type,is_shared_to_feed,media_url,thumbnail_url,permalink,caption,timestamp,like_count,comments_count,children{id,media_type,media_url,thumbnail_url}"
 }
