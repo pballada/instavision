@@ -21,7 +21,13 @@ struct ReelsView: View {
                     }
                 }
         }
-        .task { await store.loadIfNeeded() }
+        .task {
+            await store.loadIfNeeded()
+            // `--open-reels` launch argument: open the player on the first Reel (screenshots, UI testing).
+            if ProcessInfo.processInfo.arguments.contains("--open-reels"), let first = store.reels.first {
+                onSelect(first)
+            }
+        }
     }
 
     @ViewBuilder private var content: some View {
