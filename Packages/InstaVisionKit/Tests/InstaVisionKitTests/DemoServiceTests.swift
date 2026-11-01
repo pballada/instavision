@@ -16,8 +16,16 @@ import Testing
         #expect(Set(ids).count == 25)
     }
 
+    @Test func halfThePostsAreVerticalReels() async throws {
+        let page = try await service.media(limit: 20)
+        let reels = page.data.filter(\.isReel)
+        #expect(reels.count == 10)
+        #expect(reels.allSatisfy { $0.mediaType == .video && $0.mediaURL != nil })
+        #expect(reels.allSatisfy { $0.thumbnailURL?.absoluteString.hasSuffix("/1080/1920") == true })
+    }
+
     @Test func includesEveryMediaType() async throws {
-        let page = try await service.media(limit: 10)
+        let page = try await service.media(limit: 20)
         let types = Set(page.data.map(\.mediaType))
         #expect(types == [.image, .video, .carouselAlbum])
         #expect(page.data.allSatisfy { $0.previewURL != nil })
