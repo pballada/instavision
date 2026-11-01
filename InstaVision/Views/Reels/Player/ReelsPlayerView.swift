@@ -7,6 +7,8 @@ struct ReelsPlayerView: View {
 
     @Environment(AppSession.self) private var session
     @Environment(\.openURL) private var openURL
+    @Environment(\.openImmersiveSpace) private var openImmersiveSpace
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
     @AppStorage("reelsMuted") private var isMuted = false
     @State private var currentID: InstagramMedia.ID?
     @State private var pool = ReelPlayerPool()
@@ -69,6 +71,10 @@ struct ReelsPlayerView: View {
             Button(isMuted ? "Unmute" : "Mute", systemImage: isMuted ? "speaker.slash.fill" : "speaker.wave.2.fill") {
                 isMuted.toggle()
             }
+            Button("Reels Theater", systemImage: "theatermasks.fill") {
+                Task { await openTheater() }
+            }
+            .disabled(currentID == nil || session.isTheaterOpen)
             if let permalink = current(store)?.permalink {
                 Button("Open on Instagram", systemImage: "arrow.up.right.square") { openURL(permalink) }
             }
@@ -102,6 +108,14 @@ struct ReelsPlayerView: View {
         .padding(18)
         .frame(width: 480, alignment: .leading)
         .glassBackgroundEffect()
+    }
+
+    /// Only one immersive space can be open, so the gallery wall closes first.
+    private func openTheater() async {
+        session.theaterReelID = currentID
+        pool.removeAll()
+        if session.isGalleryOpen { await dismissImmersiveSpace() }
+        _ = await openImmersiveSpace(id: SceneID.theater)
     }
 
     private func step(_ store: ReelsStore, by offset: Int) {
