@@ -31,7 +31,10 @@ final class AppSession {
 
     func restore() async {
         guard state == .launching else { return }
-        if await credentials.load() != nil {
+        // `--demo` launch argument: start straight in demo mode (screenshots, UI testing).
+        if ProcessInfo.processInfo.arguments.contains("--demo") {
+            startDemo()
+        } else if await credentials.load() != nil {
             startLiveFeed()
         } else if defaults.bool(forKey: Self.demoKey) {
             startDemo()
