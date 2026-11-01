@@ -2,15 +2,15 @@ import AVFoundation
 import SwiftUI
 import InstaVisionKit
 
-/// One full-height Reel. Plays while it is the active page and loops.
+/// One full-height Reel. Plays while it is the active page; looping is handled by the pool's looper.
 struct ReelPageView: View {
     let reel: InstagramMedia
     let isActive: Bool
     let isMuted: Bool
+    let pool: ReelPlayerPool
 
-    @State private var player: AVPlayer?
+    @State private var player: AVQueuePlayer?
     @State private var isPaused = false
-    @State private var loopObserver: NSObjectProtocol?
 
     var body: some View {
         ZStack {
@@ -33,24 +33,20 @@ struct ReelPageView: View {
         .accessibilityHint("Double tap to pause or play")
         .onChange(of: isActive, initial: true) { _, active in active ? start() : stop() }
         .onChange(of: isMuted) { _, muted in player?.isMuted = muted }
-        .onDisappear(perform: tearDown)
+        .onAppear { player = pool.player(for: reel) }
+        .onDisappear {
+            player?.pause()
+            player = nil
+        }
     }
 
     private func start() {
-        guard let url = reel.mediaURL else { return }
-        let player = self.player ?? AVPlayer(url: url)
-        player.isMuted = isMuted
-        if loopObserver == nil {
-            loopObserver = NotificationCenter.default.addObserver(
-                forName: AVPlayerItem.didPlayToEndTimeNotification, object: player.currentItem, queue: .main
-            ) { [weak player] _ in
-                player?.seek(to: .zero)
-                player?.play()
-            }
-        }
+        // Always ask the pool: it may have evicted and recreated this Reel's player.
+        let player = pool.player(for: reel)
         self.player = player
+        player?.isMuted = isMuted
         isPaused = false
-        player.play()
+        player?.play()
     }
 
     private func stop() {
@@ -63,12 +59,5 @@ struct ReelPageView: View {
         guard let player else { return }
         withAnimation(.snappy) { isPaused.toggle() }
         isPaused ? player.pause() : player.play()
-    }
-
-    private func tearDown() {
-        player?.pause()
-        if let loopObserver { NotificationCenter.default.removeObserver(loopObserver) }
-        loopObserver = nil
-        player = nil
     }
 }
