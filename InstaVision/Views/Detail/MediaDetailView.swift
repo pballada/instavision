@@ -42,16 +42,22 @@ struct MediaDetailView: View {
     }
 }
 
-/// Shows one image (or a video thumbnail until video playback lands) filling the window.
+/// Shows one image or video filling the window.
 struct MediaItemView: View {
     let item: InstagramMedia
 
     var body: some View {
-        AsyncImage(url: item.previewURL) { phase in
-            switch phase {
-            case .success(let image): image.resizable().scaledToFit()
-            case .failure: ContentUnavailableView("Couldn't load this post", systemImage: "photo")
-            default: ProgressView()
+        Group {
+            if item.mediaType == .video, let url = item.mediaURL {
+                VideoItemView(url: url)
+            } else {
+                AsyncImage(url: item.previewURL) { phase in
+                    switch phase {
+                    case .success(let image): image.resizable().scaledToFit()
+                    case .failure: ContentUnavailableView("Couldn't load this post", systemImage: "photo")
+                    default: ProgressView()
+                    }
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
