@@ -7,7 +7,7 @@ struct MediaDetailView: View {
     @Environment(\.openURL) private var openURL
 
     var body: some View {
-        MediaItemView(item: post)
+        CarouselView(items: post.items)
             .ornament(attachmentAnchor: .scene(.bottom), contentAlignment: .top) {
                 details
                     .padding(24)
