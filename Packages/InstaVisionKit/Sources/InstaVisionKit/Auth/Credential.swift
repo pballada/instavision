@@ -5,10 +5,13 @@ public struct Credential: Codable, Equatable, Sendable {
     public var accessToken: String
     /// Long-lived tokens last 60 days. `nil` when unknown.
     public var expiresAt: Date?
+    /// When the token was last refreshed (or first saved). Instagram only refreshes tokens older than 24 hours.
+    public var refreshedAt: Date?
 
-    public init(accessToken: String, expiresAt: Date? = nil) {
+    public init(accessToken: String, expiresAt: Date? = nil, refreshedAt: Date? = nil) {
         self.accessToken = accessToken
         self.expiresAt = expiresAt
+        self.refreshedAt = refreshedAt
     }
 }
 
