@@ -6,13 +6,13 @@ struct ProfileHeaderView: View {
 
     var body: some View {
         HStack(spacing: 28) {
-            AsyncImage(url: profile.profilePictureURL) { image in
+            CachedImage(url: profile.profilePictureURL, image: { image in
                 image.resizable().scaledToFill()
-            } placeholder: {
+            }, placeholder: {
                 Image(systemName: "person.crop.circle.fill")
                     .resizable()
                     .foregroundStyle(.secondary)
-            }
+            })
             .frame(width: 120, height: 120)
             .clipShape(Circle())
 

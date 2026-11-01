@@ -51,7 +51,7 @@ struct MediaItemView: View {
             if item.mediaType == .video, let url = item.mediaURL {
                 VideoItemView(url: url)
             } else {
-                AsyncImage(url: item.previewURL) { phase in
+                CachedImage(url: item.previewURL) { phase in
                     switch phase {
                     case .success(let image): image.resizable().scaledToFit()
                     case .failure: ContentUnavailableView("Couldn't load this post", systemImage: "photo")
