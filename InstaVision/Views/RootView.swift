@@ -3,6 +3,7 @@ import InstaVisionKit
 
 struct RootView: View {
     @Environment(AppSession.self) private var session
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         Group {
@@ -13,7 +14,9 @@ struct RootView: View {
                 SignInView()
             case .demo, .signedIn:
                 if let feed = session.feed {
-                    FeedView(feed: feed)
+                    FeedView(feed: feed) { post in
+                        openWindow(id: SceneID.media, value: post)
+                    }
                 }
             }
         }
