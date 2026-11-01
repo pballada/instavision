@@ -8,7 +8,7 @@ struct PostTile: View {
         Color.clear
             .aspectRatio(1, contentMode: .fit)
             .overlay {
-                AsyncImage(url: post.previewURL) { phase in
+                CachedImage(url: post.previewURL) { phase in
                     switch phase {
                     case .success(let image): image.resizable().scaledToFill()
                     case .failure: Image(systemName: "photo").font(.largeTitle).foregroundStyle(.secondary)
