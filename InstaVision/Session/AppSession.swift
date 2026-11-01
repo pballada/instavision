@@ -13,7 +13,11 @@ final class AppSession {
     }
 
     private(set) var state: State = .launching
-    private(set) var feed: FeedStore?
+    private(set) var feed: FeedStore? {
+        didSet { reels = feed.map { ReelsStore(feed: $0) } }
+    }
+    /// Reels filtered from `feed`; created alongside it.
+    private(set) var reels: ReelsStore?
     var signInError: String?
     private(set) var isSigningIn = false
     /// Whether the immersive gallery wall is showing. Updated by the space itself, so it stays
