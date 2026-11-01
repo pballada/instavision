@@ -19,9 +19,16 @@ struct InstaVisionApp: App {
             }
         }
         .defaultSize(width: 900, height: 900)
+
+        ImmersiveSpace(id: SceneID.gallery) {
+            GalleryWallView()
+                .environment(session)
+        }
+        .immersionStyle(selection: .constant(.mixed), in: .mixed)
     }
 }
 
 enum SceneID {
     static let media = "media"
+    static let gallery = "gallery"
 }

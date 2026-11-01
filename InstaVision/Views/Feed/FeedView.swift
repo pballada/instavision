@@ -6,6 +6,9 @@ struct FeedView: View {
     var onSelect: (InstagramMedia) -> Void = { _ in }
 
     @State private var showsSettings = false
+    @Environment(AppSession.self) private var session
+    @Environment(\.openImmersiveSpace) private var openImmersiveSpace
+    @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
 
     private let columns = [GridItem(.adaptive(minimum: 220, maximum: 320), spacing: 12)]
 
@@ -18,6 +21,13 @@ struct FeedView: View {
                         Button("Settings", systemImage: "gearshape") { showsSettings = true }
                     }
                     ToolbarItem(placement: .primaryAction) {
+                        Button(session.isGalleryOpen ? "Close Gallery" : "Gallery Wall",
+                               systemImage: session.isGalleryOpen ? "xmark.circle" : "rectangle.3.group") {
+                            Task { await toggleGallery() }
+                        }
+                        .disabled(feed.posts.isEmpty)
+                    }
+                    ToolbarItem(placement: .primaryAction) {
                         Button("Refresh", systemImage: "arrow.clockwise") {
                             Task { await feed.refresh() }
                         }
@@ -26,6 +36,14 @@ struct FeedView: View {
         }
         .sheet(isPresented: $showsSettings) { SettingsView() }
         .task { await feed.loadIfNeeded() }
+    }
+
+    private func toggleGallery() async {
+        if session.isGalleryOpen {
+            await dismissImmersiveSpace()
+        } else {
+            _ = await openImmersiveSpace(id: SceneID.gallery)
+        }
     }
 
     @ViewBuilder private var content: some View {
