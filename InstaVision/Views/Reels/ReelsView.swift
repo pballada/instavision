@@ -48,7 +48,7 @@ struct ReelsView: View {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(reels) { reel in
-                            Button { onSelect(reel) } label: { PostTile(post: reel) }
+                            Button { onSelect(reel) } label: { ReelTile(reel: reel) }
                                 .buttonStyle(.plain)
                                 .task { await store.loadMoreIfNeeded(after: reel) }
                         }
