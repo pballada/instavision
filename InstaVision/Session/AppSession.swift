@@ -16,6 +16,9 @@ final class AppSession {
     private(set) var feed: FeedStore?
     var signInError: String?
     private(set) var isSigningIn = false
+    /// Whether the immersive gallery wall is showing. Updated by the space itself, so it stays
+    /// correct when the system closes it.
+    var isGalleryOpen = false
 
     private let credentials: any CredentialStore
     private let defaults: UserDefaults
