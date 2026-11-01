@@ -61,6 +61,16 @@ public struct DemoInstagramService: InstagramService {
         URL(string: "https://picsum.photos/id/\(id)/\(size)/\(size)")!
     }
 
+    /// A 9:16 cover image, like a Reel thumbnail.
+    static func verticalPhoto(id: Int) -> URL {
+        URL(string: "https://picsum.photos/id/\(id)/1080/1920")!
+    }
+
+    static let reelCaptions = [
+        "POV: you finally nailed the shot 🎬", "60 seconds of pure calm 🌿", "Wait for it… 👀",
+        "Morning routine, sped up ☀️", "This view though 🏔️", "Tiny details, big mood ✨",
+    ]
+
     static func post(index: Int) -> InstagramMedia {
         let photoID = 10 + (index * 7) % 90
         let date = Date(timeIntervalSince1970: 1_790_000_000 - Double(index) * 86_400 * 2.5)
@@ -69,10 +79,20 @@ public struct DemoInstagramService: InstagramService {
         let likes = 80 + (index * 37) % 900
         let comments = (index * 13) % 60
 
+        // Every other post is a Reel, so the demo is Reels-first like the app.
+        if index % 2 == 0 {
+            return InstagramMedia(
+                id: "demo-\(index)", mediaType: .video, productType: .reels, isSharedToFeed: index % 4 == 0,
+                mediaURL: sampleVideo, thumbnailURL: verticalPhoto(id: photoID), permalink: permalink,
+                caption: reelCaptions[(index / 2) % reelCaptions.count], timestamp: date,
+                likeCount: likes * 6, commentsCount: comments * 3
+            )
+        }
+
         switch index % 7 {
         case 3:
             return InstagramMedia(
-                id: "demo-\(index)", mediaType: .video, mediaURL: sampleVideo,
+                id: "demo-\(index)", mediaType: .video, productType: .feed, mediaURL: sampleVideo,
                 thumbnailURL: photo(id: photoID), permalink: permalink, caption: caption,
                 timestamp: date, likeCount: likes, commentsCount: comments
             )
@@ -81,13 +101,13 @@ public struct DemoInstagramService: InstagramService {
                 InstagramMedia(id: "demo-\(index)-\(child)", mediaType: .image, mediaURL: photo(id: photoID + child))
             }
             return InstagramMedia(
-                id: "demo-\(index)", mediaType: .carouselAlbum, mediaURL: children[0].mediaURL,
+                id: "demo-\(index)", mediaType: .carouselAlbum, productType: .feed, mediaURL: children[0].mediaURL,
                 permalink: permalink, caption: caption, timestamp: date,
                 likeCount: likes, commentsCount: comments, children: children
             )
         default:
             return InstagramMedia(
-                id: "demo-\(index)", mediaType: .image, mediaURL: photo(id: photoID),
+                id: "demo-\(index)", mediaType: .image, productType: .feed, mediaURL: photo(id: photoID),
                 permalink: permalink, caption: caption, timestamp: date,
                 likeCount: likes, commentsCount: comments
             )
