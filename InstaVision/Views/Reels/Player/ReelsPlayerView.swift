@@ -9,6 +9,7 @@ struct ReelsPlayerView: View {
     @Environment(\.openURL) private var openURL
     @AppStorage("reelsMuted") private var isMuted = false
     @State private var currentID: InstagramMedia.ID?
+    @State private var pool = ReelPlayerPool()
 
     var body: some View {
         if let store = session.reels {
@@ -22,7 +23,7 @@ struct ReelsPlayerView: View {
         ScrollView(.vertical) {
             LazyVStack(spacing: 0) {
                 ForEach(store.reels) { reel in
-                    ReelPageView(reel: reel, isActive: reel.id == currentID, isMuted: isMuted)
+                    ReelPageView(reel: reel, isActive: reel.id == currentID, isMuted: isMuted, pool: pool)
                         .containerRelativeFrame([.horizontal, .vertical])
                         .id(reel.id)
                         .task { await store.loadMoreIfNeeded(after: reel) }
@@ -35,6 +36,11 @@ struct ReelsPlayerView: View {
         .scrollIndicators(.hidden)
         .ignoresSafeArea()
         .onAppear { if currentID == nil { currentID = startID } }
+        .onChange(of: currentID, initial: true) { _, id in
+            if let id { pool.prepare(around: id, in: store.reels) }
+        }
+        .onChange(of: isMuted) { _, muted in pool.setMuted(muted) }
+        .onDisappear { pool.removeAll() }
         .ornament(attachmentAnchor: .scene(.trailing), contentAlignment: .leading) {
             controls(store)
         }
