@@ -5,10 +5,14 @@ struct FeedView: View {
     let feed: FeedStore
     var onSelect: (InstagramMedia) -> Void = { _ in }
 
-    @State private var showsSettings = false
     @Environment(AppSession.self) private var session
     @Environment(\.openImmersiveSpace) private var openImmersiveSpace
     @Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+
+    /// The profile grid: posts plus Reels that were shared to the feed, like on Instagram.
+    private var gridPosts: [InstagramMedia] {
+        feed.posts.filter { !$0.isReel || $0.isSharedToFeed != false }
+    }
 
     private let columns = [GridItem(.adaptive(minimum: 220, maximum: 320), spacing: 12)]
 
@@ -17,9 +21,7 @@ struct FeedView: View {
             content
                 .navigationTitle(feed.profile.map { "@\($0.username)" } ?? "InstaVision")
                 .toolbar {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button("Settings", systemImage: "gearshape") { showsSettings = true }
-                    }
+                    ToolbarItem(placement: .topBarLeading) { SettingsButton() }
                     ToolbarItem(placement: .primaryAction) {
                         Button(session.isGalleryOpen ? "Close Gallery" : "Gallery Wall",
                                systemImage: session.isGalleryOpen ? "xmark.circle" : "rectangle.3.group") {
@@ -34,7 +36,6 @@ struct FeedView: View {
                     }
                 }
         }
-        .sheet(isPresented: $showsSettings) { SettingsView() }
         .task { await feed.loadIfNeeded() }
     }
 
@@ -65,7 +66,7 @@ struct FeedView: View {
                         ProfileHeaderView(profile: profile)
                     }
                     LazyVGrid(columns: columns, spacing: 12) {
-                        ForEach(feed.posts) { post in
+                        ForEach(gridPosts) { post in
                             Button { onSelect(post) } label: { PostTile(post: post) }
                                 .buttonStyle(.plain)
                                 .task { await feed.loadMoreIfNeeded(after: post) }
