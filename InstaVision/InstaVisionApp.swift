@@ -1,4 +1,5 @@
 import SwiftUI
+import InstaVisionKit
 
 @main
 struct InstaVisionApp: App {
@@ -10,5 +11,17 @@ struct InstaVisionApp: App {
                 .environment(session)
         }
         .defaultSize(width: 1100, height: 800)
+
+        WindowGroup(id: SceneID.media, for: InstagramMedia.self) { $post in
+            if let post {
+                MediaDetailView(post: post)
+                    .environment(session)
+            }
+        }
+        .defaultSize(width: 900, height: 900)
     }
+}
+
+enum SceneID {
+    static let media = "media"
 }
