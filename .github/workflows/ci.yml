@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-kit:
+    name: InstaVisionKit tests
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show toolchain
+        run: swift --version
+      - name: Run tests
+        working-directory: Packages/InstaVisionKit
+        run: swift test
+
+  build-app:
+    name: Build visionOS app
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show Xcode and SDKs
+        run: xcodebuild -version && xcodebuild -showsdks | grep -i xr || true
+      - name: Build for visionOS Simulator
+        run: |
+          xcodebuild build \
+            -project InstaVision.xcodeproj \
+            -scheme InstaVision \
+            -destination 'generic/platform=visionOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO
